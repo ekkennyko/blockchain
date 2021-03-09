@@ -1,8 +1,8 @@
 pragma solidity ^0.7.4;
 
-contract Test
+contract HomeStruct
 {
-    enum RequestType {NewHome, EditHome}
+    enum RequestType { NewHome, EditHome }
     
     struct Ownership
     {
