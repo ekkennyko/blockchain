@@ -87,10 +87,11 @@ contract HomeList
     }
     
     function UpdateEmployee(uint _searchId, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public {
-       if(!isEmployee(_searchId)) revert();
-       if(bytes(_newName).length != 0) {  employees[_searchId].name = _newName; }
-       if(bytes(_newPosition).length != 0) { employees[_searchId].position = _newPosition; }
-       if(bytes(_newPhoneNumber).length != 0) { employees[_searchId].phoneNumber = _newPhoneNumber; }
+        string memory empty = "";
+        if(!isEmployee(_searchId)) revert();
+        if(bytes(_newName).length != bytes(empty).length) {  employees[_searchId].name = _newName; }
+        if(bytes(_newPosition).length != bytes(empty).length) { employees[_searchId].position = _newPosition; }
+        if(bytes(_newPhoneNumber).length != bytes(empty).length) { employees[_searchId].phoneNumber = _newPhoneNumber; }
     }
     
     function RemoveEmployee(uint id) public
