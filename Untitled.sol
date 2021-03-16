@@ -92,4 +92,9 @@ contract HomeList
        if(bytes(_newPosition).length != 0) { employees[_searchId].position = _newPosition; }
        if(bytes(_newPhoneNumber).length != 0) { employees[_searchId].phoneNumber = _newPhoneNumber; }
     }
+    
+    function RemoveEmployee(uint id) public
+    {
+        delete employees[id];
+    }
 }
