@@ -64,7 +64,7 @@ contract HomeList
         return (homes[adr].area, homes[adr].cost);
     }
     
-    function isEmployee(string memory _name) public returns(bool _isEmployee){
+    function isEmployee(string memory _name) private returns(bool _isEmployee){
         return employees[_name].isEmployee;
     }
     
@@ -83,7 +83,10 @@ contract HomeList
     
     function UpdateEmployee(string memory _searchName, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public {
        if(!isEmployee(_searchName)) revert();
-       if(bytes(_newName).length != 0) { employees[_searchName].name = _newName; }
+       if(bytes(_newName).length != 0) { 
+           employees[_searchName].name = _newName; 
+           employees[_newName].name = _newName; 
+       }
        if(bytes(_newPosition).length != 0) { employees[_newName].position = _newPosition; }
        if(bytes(_newPhoneNumber).length != 0) { employees[_newName].phoneNumber = _newPhoneNumber; }
     }
