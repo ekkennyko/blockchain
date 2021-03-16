@@ -83,11 +83,8 @@ contract HomeList
     
     function UpdateEmployee(string memory _searchName, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public {
        if(!isEmployee(_searchName)) revert();
-       bytes memory lengthName = bytes(_newName);
-       bytes memory lengthPosition = bytes(_newPosition);
-       bytes memory lengthPhoneNumber = bytes(_newPhoneNumber);
-       if(lengthName.length != 0) employees[_searchName].name = _newName;
-       if(lengthPosition.length != 0) employees[_searchName].position = _newPosition;
-       if(lengthPhoneNumber.length != 0) employees[_searchName].phoneNumber = _newPhoneNumber;
+       if(bytes(_newName).length != 0) { employees[_searchName].name = _newName; }
+       if(bytes(_newPosition).length != 0) { employees[_newName].position = _newPosition; }
+       if(bytes(_newPhoneNumber).length != 0) { employees[_newName].phoneNumber = _newPhoneNumber; }
     }
 }
