@@ -39,18 +39,21 @@ contract HomeList
     
     struct Employee
     {
+        uint id;
         string name;
         string position;
         string phoneNumber;
         bool isEmployee;
     }
     
-    mapping(string => Employee) private employees;
+    mapping(uint => Employee) private employees;
     mapping(address => Owner) private owners;
     mapping(address => Request) private requests;
     
     mapping(string => Home) private homes;
     mapping(string => Ownership[]) private ownerships;
+    
+    uint countIDEmployees = 0;
     
     function AddHome(string memory _adr, uint _area, uint _cost) public {
         Home memory h;
@@ -64,30 +67,29 @@ contract HomeList
         return (homes[adr].area, homes[adr].cost);
     }
     
-    function isEmployee(string memory _name) private returns(bool _isEmployee){
-        return employees[_name].isEmployee;
+    function isEmployee(uint _id) private returns(bool _isEmployee){
+        return employees[_id].isEmployee;
     }
     
     function AddEmployee(string memory _name, string memory _position, string memory _phoneNumber) public {
         Employee memory e;
+        e.id = countIDEmployees;
         e.name = _name;
         e.position = _position;
         e.phoneNumber = _phoneNumber;
         e.isEmployee = true;
-        employees[_name] = e;
+        employees[countIDEmployees] = e;
+        countIDEmployees++;
     }
     
-    function GetEmployee(string memory name) public returns (string memory _position, string memory _phoneNumber){
-        return (employees[name].position, employees[name].phoneNumber);
+    function GetEmployee(uint id) public returns (string memory _name, string memory _position, string memory _phoneNumber){
+        return (employees[id].name, employees[id].position, employees[id].phoneNumber);
     }
     
-    function UpdateEmployee(string memory _searchName, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public {
-       if(!isEmployee(_searchName)) revert();
-       if(bytes(_newName).length != 0) { 
-           employees[_searchName].name = _newName; 
-           employees[_newName].name = _newName; 
-       }
-       if(bytes(_newPosition).length != 0) { employees[_newName].position = _newPosition; }
-       if(bytes(_newPhoneNumber).length != 0) { employees[_newName].phoneNumber = _newPhoneNumber; }
+    function UpdateEmployee(uint _searchId, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public {
+       if(!isEmployee(_searchId)) revert();
+       if(bytes(_newName).length != 0) {  employees[_searchId].name = _newName; }
+       if(bytes(_newPosition).length != 0) { employees[_searchId].position = _newPosition; }
+       if(bytes(_newPhoneNumber).length != 0) { employees[_searchId].phoneNumber = _newPhoneNumber; }
     }
 }
