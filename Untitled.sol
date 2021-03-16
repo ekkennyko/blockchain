@@ -1,6 +1,6 @@
 pragma solidity ^0.7.4;
 
-contract HomeStruct
+contract HomeList
 {
     enum RequestType { NewHome, EditHome }
     
@@ -42,9 +42,10 @@ contract HomeStruct
         string name;
         string position;
         string phoneNumber;
+        bool isEmployee;
     }
     
-    mapping(address => Employee) private employees;
+    mapping(string => Employee) private employees;
     mapping(address => Owner) private owners;
     mapping(address => Request) private requests;
     
@@ -61,5 +62,32 @@ contract HomeStruct
     
     function GetHome(string memory adr) public returns (uint _area, uint _cost){
         return (homes[adr].area, homes[adr].cost);
+    }
+    
+    function isEmployee(string memory _name) public returns(bool _isEmployee){
+        return employees[_name].isEmployee;
+    }
+    
+    function AddEmployee(string memory _name, string memory _position, string memory _phoneNumber) public {
+        Employee memory e;
+        e.name = _name;
+        e.position = _position;
+        e.phoneNumber = _phoneNumber;
+        e.isEmployee = true;
+        employees[_name] = e;
+    }
+    
+    function GetEmployee(string memory name) public returns (string memory _position, string memory _phoneNumber){
+        return (employees[name].position, employees[name].phoneNumber);
+    }
+    
+    function UpdateEmployee(string memory _searchName, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public {
+       if(!isEmployee(_searchName)) revert();
+       bytes memory lengthName = bytes(_newName);
+       bytes memory lengthPosition = bytes(_newPosition);
+       bytes memory lengthPhoneNumber = bytes(_newPhoneNumber);
+       if(lengthName.length != 0) employees[_searchName].name = _newName;
+       if(lengthPosition.length != 0) employees[_searchName].position = _newPosition;
+       if(lengthPhoneNumber.length != 0) employees[_searchName].phoneNumber = _newPhoneNumber;
     }
 }
