@@ -88,7 +88,7 @@ contract HomeList is Owned
             _;
     }
     
-    function AddHome(string memory _adr, uint _area, uint _cost) public
+    function AddHome(string memory _adr, uint _area, uint _cost) public OnlyEmployee
     {
         Home memory h;
         h.homeAddress = _adr;
@@ -97,7 +97,7 @@ contract HomeList is Owned
         homes[_adr] = h;
     }
     
-    function GetHome(string memory adr) public returns (uint _area, uint _cost)
+    function GetHome(string memory adr) public OnlyEmployee returns (uint _area, uint _cost)
     {
         return (homes[adr].area, homes[adr].cost);
     }
@@ -134,5 +134,17 @@ contract HomeList is Owned
     function RemoveEmployee(address empl) public OnlyOwner
     {
         delete employees[empl];
+    }
+
+     function AddHomeRequest(string memory homeAddress, uint256 homeArea, uint256 homeCost) public
+     {
+        Request memory req;
+        req.id = reqCount;
+        req.requestType = RequestType.NewHome;
+        req.homeAddress = homeAddress;
+        req.homeArea = homeArea;
+        req.homeCost = homeCost;
+        requests[reqCount] = req;
+        reqCount++;
     }
 }
