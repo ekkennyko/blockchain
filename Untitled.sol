@@ -58,10 +58,10 @@ contract HomeList is Owned
     
     struct Request
     {
+        address new;
         RequestType requestType;
         Home home;
         uint result;
-        address adr;
     }
     
     struct Employee
@@ -74,10 +74,12 @@ contract HomeList is Owned
     
     mapping(address => Employee) private employees;
     mapping(address => Owner) private owners;
-    mapping(address => Request) private requests;
+    mapping(uint => Request) private requests;
     
     mapping(string => Home) private homes;
     mapping(string => Ownership[]) private ownerships;
+
+    uint requestCount = 0;
     
     modifier OnlyEmployee
     {
@@ -124,11 +126,12 @@ contract HomeList is Owned
     
     function UpdateEmployee(address empl, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public OnlyOwner
     {
-        string memory empty = "";
         if(!isEmployee(empl)) revert();
-        if(bytes(_newName).length != bytes(empty).length) {  employees[empl].name = _newName; }
-        if(bytes(_newPosition).length != bytes(empty).length) { employees[empl].position = _newPosition; }
-        if(bytes(_newPhoneNumber).length != bytes(empty).length) { employees[empl].phoneNumber = _newPhoneNumber; }
+        string memory empty = "";
+        Employee storage e = employees[empl];
+        if(bytes(_newName).length != bytes(empty).length) { e.name = _newName; }
+        if(bytes(_newPosition).length != bytes(empty).length) { e.position = _newPosition; }
+        if(bytes(_newPhoneNumber).length != bytes(empty).length) { e.phoneNumber = _newPhoneNumber; }
     }
     
     function RemoveEmployee(address empl) public OnlyOwner
@@ -136,15 +139,28 @@ contract HomeList is Owned
         delete employees[empl];
     }
 
-     function AddHomeRequest(string memory homeAddress, uint256 homeArea, uint256 homeCost) public
+     function AddHewHomeRequest(address request, string memory homeAddress, uint area, uint cost) public
      {
-        Request memory req;
-        req.id = reqCount;
+        Home memory h;
+        Request memory r;
+
+        h.homeAddress = homeAddress;
+        h.area = area;
+        h.cost = cost;
+
+        r.new = req;
         req.requestType = RequestType.NewHome;
-        req.homeAddress = homeAddress;
-        req.homeArea = homeArea;
-        req.homeCost = homeCost;
-        requests[reqCount] = req;
-        reqCount++;
+        req.home = h;
+        req.result = 0;
+        requests[requestCount] = r;
+        requestCount++;
+    }
+
+    function GetRequestsList() public OnlyEmployee view returns (Request[] memory request)
+    {
+        request = new Request[](requestCount);
+        for (uint i = 0; i < requestCount; i++)
+            request[i] = requests[i];
+        return request;
     }
 }
