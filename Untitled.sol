@@ -2,11 +2,14 @@ pragma solidity ^0.7.4;
 
 contract Owned
 {
-    constructor()
+
+	address payable private owner;
+
+    constructor() public
     {
         owner = msg.sender;
     }
-    address private owner;
+
     modifier OnlyOwner
     {
         require(
@@ -33,7 +36,7 @@ contract HomeList is Owned
     
     struct Ownership
     {
-        Home home;
+        string homeAddress;
         address owner;
         uint procent;
     }
@@ -43,7 +46,7 @@ contract HomeList is Owned
         string name;
         uint passSer;
         uint passNum;
-        uint256 date;
+        uint date;
         string phoneNumber;
     }
     
@@ -51,7 +54,6 @@ contract HomeList is Owned
     {
         string homeAddress;
         uint area;
-        address owner;
         uint cost;
         bool status;
     }
@@ -74,12 +76,13 @@ contract HomeList is Owned
     
     mapping(address => Employee) private employees;
     mapping(address => Owner) private owners;
-    mapping(uint => Request) private requests;
+    mapping(address => Request) private requests;
     
     mapping(string => Home) private homes;
     mapping(string => Ownership[]) private ownerships;
 
-    uint requestCount = 0;
+    address[] requestInit;
+    uint private fee = 1e12;
     
     modifier OnlyEmployee
     {
@@ -89,54 +92,79 @@ contract HomeList is Owned
             );
             _;
     }
+
+    modifier Costs(uint value)
+    {
+    	require(
+    		msg.value >= value,
+    		'Not enough to buy'
+    	);
+    	_;
+    }
+
+    function ChangeFee(uint pFee) public OnlyOwner
+    {
+    	fee = pFee;
+    }
     
-    function AddHome(string memory _adr, uint _area, uint _cost) public OnlyEmployee
+    function NewHome(string memory pAdr, uint pArea, uint pCost) public OnlyEmployee
     {
         Home memory h;
-        h.homeAddress = _adr;
-        h.area = _area;
-        h.cost = _cost;
+        h.homeAddress = pAdr;
+        h.area = pArea;
+        h.cost = pCost;
         homes[_adr] = h;
     }
     
-    function GetHome(string memory adr) public OnlyEmployee returns (uint _area, uint _cost)
+    function GetHome(string memory adr) public returns (uint pArea, uint pCost)
     {
         return (homes[adr].area, homes[adr].cost);
     }
-    
-    function isEmployee(address empl) private returns(bool _isEmployee)
+
+    function UpdateHome(string memory pAdr, uint pNewArea, uint pNewCost) OnlyEmployee public
     {
-        return employees[empl].isEmployee;
+    	Home storage h = home[pAdr];
+    	h.area = pNewArea;
+    	h.cost = pNewCost;
     }
     
-    function AddEmployee(address empl, string memory _name, string memory _position, string memory _phoneNumber) public OnlyOwner
+    function NewEmployee(address empl, string memory pName, string memory pPosition, string memory pPhoneNumber) public OnlyOwner
     {
         Employee memory e;
-        e.name = _name;
-        e.position = _position;
-        e.phoneNumber = _phoneNumber;
+        e.name = pName;
+        e.position = pPosition;
+        e.phoneNumber = pPhoneNumber;
         e.isEmployee = true;
         employees[empl] = e;
     }
     
-    function GetEmployee(address empl) public OnlyOwner returns (string memory _name, string memory _position, string memory _phoneNumber)
+    function GetEmployee(address empl) public OnlyOwner returns (string memory pName, string memory pPosition, string memory pPhoneNumber)
     {
         return (employees[empl].name, employees[empl].position, employees[empl].phoneNumber);
     }
     
-    function UpdateEmployee(address empl, string memory _newName, string memory _newPosition, string memory _newPhoneNumber) public OnlyOwner
+    function UpdateEmployee(address empl, string memory pNewName, string memory pNewPosition, string memory pNewPhoneNumber) public OnlyOwner
     {
-        if(!isEmployee(empl)) revert();
-        string memory empty = "";
-        Employee storage e = employees[empl];
-        if(bytes(_newName).length != bytes(empty).length) { e.name = _newName; }
-        if(bytes(_newPosition).length != bytes(empty).length) { e.position = _newPosition; }
-        if(bytes(_newPhoneNumber).length != bytes(empty).length) { e.phoneNumber = _newPhoneNumber; }
+    	Employee storage e = employees[empl];
+        if(employees[empl].isEmployee == true)
+        {
+ 	       string memory empty = "";
+ 	       Employee storage e = employees[empl];
+ 	       if(bytes(_newName).length != bytes(empty).length) { e.name = pNewName; }
+ 	       if(bytes(_newPosition).length != bytes(empty).length) { e.position = pNewPosition; }
+ 	       if(bytes(_newPhoneNumber).length != bytes(empty).length) { e.phoneNumber = pNewPhoneNumber; }
+        }
+        else revert();
     }
     
-    function RemoveEmployee(address empl) public OnlyOwner
+    function RemoveEmployee(address empl) public OnlyOwner returns(bool)
     {
-        delete employees[empl];
+    	if(employees[empl].isEmployee == true)
+    	{
+        	delete employees[empl];
+        	return true;
+    	}
+    	return false;
     }
 
      function AddHewHomeRequest(address request, string memory homeAddress, uint area, uint cost) public
@@ -148,19 +176,25 @@ contract HomeList is Owned
         h.area = area;
         h.cost = cost;
 
-        r.new = req;
-        req.requestType = RequestType.NewHome;
+        r.new = rType == 0 ? address(0) : newOwner;
+        req.requestType = rType == 0 ? RequestType.NewHome : RequestType.EditHome;
         req.home = h;
-        req.result = 0;
-        requests[requestCount] = r;
-        requestCount++;
+        req.result = false;
+        requests[msg.sender] = r;
+        requestInit.push(msg.sender);
     }
 
-    function GetRequestsList() public OnlyEmployee view returns (Request[] memory request)
+    function GetRequestList() public OnlyEmployee returns (uint[] memory, uint[] memory, string[] memory)
     {
-        request = new Request[](requestCount);
-        for (uint i = 0; i < requestCount; i++)
-            request[i] = requests[i];
-        return request;
+        uint[] memory ids = new uint[](requestInit.length);
+        uint[] memory types = new uint[](requestInit.length);
+        string[] memory homeAddresses = new string[](requestInit.length);
+        for(uint i=0; i!=requestInit.length; i++)
+        {
+            ids[i] = i;
+            types[i] = requests[requestInit[i]].requestType == RequestType.NewHome ? 0 : 1;
+            homeAddresses[i] = requests[requestInit[i]].home.homeAddress;
+        }
+        return (ids, types, homeAddresses);
     }
 }
