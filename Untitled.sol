@@ -1,9 +1,10 @@
+pragma experimental ABIEncoderV2;
 pragma solidity ^0.7.4;
 
 contract Owned
 {
 
-	address payable private owner;
+    address payable private owner;
 
     constructor() public
     {
@@ -19,7 +20,7 @@ contract Owned
             _;
     }
     
-    function ChangeOwner(address newOwner) public OnlyOwner
+    function ChangeOwner(address payable newOwner) public OnlyOwner
     {
         owner = newOwner;
     }
@@ -60,10 +61,10 @@ contract HomeList is Owned
     
     struct Request
     {
-        address new;
+        address adr;
         RequestType requestType;
         Home home;
-        uint result;
+        bool result;
     }
     
     struct Employee
@@ -82,7 +83,7 @@ contract HomeList is Owned
     mapping(string => Ownership[]) private ownerships;
 
     address[] requestInit;
-    uint private fee = 1e12;
+    uint private price = 1e12;
     
     modifier OnlyEmployee
     {
@@ -95,16 +96,21 @@ contract HomeList is Owned
 
     modifier Costs(uint value)
     {
-    	require(
-    		msg.value >= value,
-    		'Not enough to buy'
-    	);
-    	_;
+        require(
+            msg.value >= value,
+            'Not enough to buy'
+        );
+        _;
     }
 
-    function ChangeFee(uint pFee) public OnlyOwner
+    function ChangePrice(uint pPrice) public OnlyOwner
     {
-    	fee = pFee;
+        price = pPrice;
+    }
+    
+    function GetPrice() public view returns (uint)
+    {
+        return price;
     }
     
     function NewHome(string memory pAdr, uint pArea, uint pCost) public OnlyEmployee
@@ -113,7 +119,7 @@ contract HomeList is Owned
         h.homeAddress = pAdr;
         h.area = pArea;
         h.cost = pCost;
-        homes[_adr] = h;
+        homes[pAdr] = h;
     }
     
     function GetHome(string memory adr) public returns (uint pArea, uint pCost)
@@ -123,9 +129,9 @@ contract HomeList is Owned
 
     function UpdateHome(string memory pAdr, uint pNewArea, uint pNewCost) OnlyEmployee public
     {
-    	Home storage h = home[pAdr];
-    	h.area = pNewArea;
-    	h.cost = pNewCost;
+        Home storage h = homes[pAdr];
+        h.area = pNewArea;
+        h.cost = pNewCost;
     }
     
     function NewEmployee(address empl, string memory pName, string memory pPosition, string memory pPhoneNumber) public OnlyOwner
@@ -145,41 +151,40 @@ contract HomeList is Owned
     
     function UpdateEmployee(address empl, string memory pNewName, string memory pNewPosition, string memory pNewPhoneNumber) public OnlyOwner
     {
-    	Employee storage e = employees[empl];
+        Employee storage e = employees[empl];
         if(employees[empl].isEmployee == true)
         {
- 	       string memory empty = "";
- 	       Employee storage e = employees[empl];
- 	       if(bytes(_newName).length != bytes(empty).length) { e.name = pNewName; }
- 	       if(bytes(_newPosition).length != bytes(empty).length) { e.position = pNewPosition; }
- 	       if(bytes(_newPhoneNumber).length != bytes(empty).length) { e.phoneNumber = pNewPhoneNumber; }
+           string memory empty = "";
+           if(bytes(pNewName).length != bytes(empty).length) { e.name = pNewName; }
+           if(bytes(pNewPosition).length != bytes(empty).length) { e.position = pNewPosition; }
+           if(bytes(pNewPhoneNumber).length != bytes(empty).length) { e.phoneNumber = pNewPhoneNumber; }
         }
         else revert();
     }
     
     function RemoveEmployee(address empl) public OnlyOwner returns(bool)
     {
-    	if(employees[empl].isEmployee == true)
-    	{
-        	delete employees[empl];
-        	return true;
-    	}
-    	return false;
+        if(employees[empl].isEmployee == true)
+        {
+            delete employees[empl];
+            return true;
+        }
+        return false;
     }
 
-     function AddHewHomeRequest(address request, string memory homeAddress, uint area, uint cost) public
+     function AddHewHomeRequest(uint rType, string memory homeAddress, uint area, uint cost, address newOwner) public Costs(price) payable returns (bool)
      {
         Home memory h;
         Request memory r;
 
+        r.requestType = rType == 0? RequestType.NewHome:RequestType.EditHome;
+        r.adr = rType==0?address(0):newOwner;
+
         h.homeAddress = homeAddress;
         h.area = area;
         h.cost = cost;
-
-        r.new = rType == 0 ? address(0) : newOwner;
-        req.requestType = rType == 0 ? RequestType.NewHome : RequestType.EditHome;
-        req.home = h;
-        req.result = false;
+        r.home = h;
+        r.result = false;
         requests[msg.sender] = r;
         requestInit.push(msg.sender);
     }
