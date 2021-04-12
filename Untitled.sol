@@ -61,9 +61,9 @@ contract HomeList is Owned
     
     struct Request
     {
-        address adr;
         RequestType requestType;
         Home home;
+        address adr;
         bool result;
     }
     
@@ -84,6 +84,7 @@ contract HomeList is Owned
 
     address[] requestInit;
     uint private price = 1e12;
+    uint private amount;
     
     modifier OnlyEmployee
     {
@@ -113,12 +114,13 @@ contract HomeList is Owned
         return price;
     }
     
-    function NewHome(string memory pAdr, uint pArea, uint pCost) public OnlyEmployee
+    function NewHome(string memory pAdr, uint pArea, uint pCost) public
     {
         Home memory h;
         h.homeAddress = pAdr;
         h.area = pArea;
         h.cost = pCost;
+        h.status = true;
         homes[pAdr] = h;
     }
     
@@ -127,11 +129,37 @@ contract HomeList is Owned
         return (homes[adr].area, homes[adr].cost);
     }
 
-    function UpdateHome(string memory pAdr, uint pNewArea, uint pNewCost) OnlyEmployee public
+    function UpdateHome(string memory pAdr, uint pNewArea, uint pNewCost) public
     {
         Home storage h = homes[pAdr];
         h.area = pNewArea;
         h.cost = pNewCost;
+    }
+
+    function NewOwnership(string memory pHomeAddress, address pOwner, uint pProcent) public
+    {
+        Ownership storage owner;
+        owner.homeAddress = pHomeAddress;
+        owner.owner = pOwner;
+        o.procent = pProcent;
+        ownerships[pHomeAddress].push(owner);
+    }
+
+    function GetOwnership (string memory Adr) public view returns(uint[] memory, address[] memory)
+    {
+        uint[] memory procent = new uint[](ownerships[adr].length);
+        address[] memory ownerAddress = new address[](ownerships[adr].length);
+        for (uint i = 0; i != ownerships[adr].length; i++)
+        {
+            procent[i] = ownerships[adr][i].procent;
+            ownerAddress[i] = ownerships[adr][i].owner;
+        }
+        return(procent, ownerAddress);
+    }
+
+    function RemoveOwnership(string memory pHomeAddress, address pOwner) public
+    {
+        delete ownerships[pHomeAddress];
     }
     
     function NewEmployee(address empl, string memory pName, string memory pPosition, string memory pPhoneNumber) public OnlyOwner
@@ -172,21 +200,23 @@ contract HomeList is Owned
         return false;
     }
 
-     function AddHewHomeRequest(uint rType, string memory homeAddress, uint area, uint cost, address newOwner) public Costs(price) payable returns (bool)
+     function NewRequest(uint pType, string memory pHomeAddress, uint pArea, uint pCost, address pNewOwner) public payable Costs(price) returns (bool)
      {
         Home memory h;
         Request memory r;
 
-        r.requestType = rType == 0? RequestType.NewHome:RequestType.EditHome;
-        r.adr = rType==0?address(0):newOwner;
+        r.requestType = pType == 0? RequestType.NewHome:RequestType.EditHome;
+        r.adr = pType==0?address(0):pNewOwner;
 
-        h.homeAddress = homeAddress;
-        h.area = area;
-        h.cost = cost;
+        h.homeAddress = pHomeAddress;
+        h.area = pArea;
+        h.cost = pCost;
         r.home = h;
         r.result = false;
         requests[msg.sender] = r;
         requestInit.push(msg.sender);
+        amount += msg.value;
+        return true;
     }
 
     function GetRequestList() public OnlyEmployee returns (uint[] memory, uint[] memory, string[] memory)
@@ -201,5 +231,38 @@ contract HomeList is Owned
             homeAddresses[i] = requests[requestInit[i]].home.homeAddress;
         }
         return (ids, types, homeAddresses);
+    }
+
+    function RemoveRequest(uint pId) public
+    {
+        delete requests[requestInit[pId]];
+    }
+
+    function ProcessingOfRequest(uint pId) public OnlyEmployee returns(string memory)
+    {
+        if (requests[requestsInitiator[pId]].requestType == RequestType.NewHome)
+        {
+            if(homes[requests[requestsInit[pId]].home.homeAddress].status == false)
+            {
+                NewHome(requests[requestsInit[pId]].home.homeAddress,requests[requestsInit[pId]].home.area, requests[requestsInit[pId]].home.cost);
+                RemoveRequest(pId);
+                delete requestsInit[pId];
+                return "Success!";
+            }
+        }
+        else
+        {
+            if(homes[requests[requestsInit[pId]].home.homeAddress].status == true)
+            {
+                UpdateHome(requests[requestsInit[pId]].home.homeAddress,requests[requestsInit[pId]].home.area, requests[requestsInit[pId]].home.cost);
+                DeleteRequest(pId);
+                delete requestsInit[pId];
+                return "Success update!";
+            }
+            else
+            {
+                return "Failure!...";
+            }
+        }
     }
 }
