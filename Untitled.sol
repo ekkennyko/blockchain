@@ -138,14 +138,14 @@ contract HomeList is Owned
 
     function NewOwnership(string memory pHomeAddress, address pOwner, uint pProcent) public
     {
-        Ownership storage owner;
+        Ownership memory owner;
         owner.homeAddress = pHomeAddress;
         owner.owner = pOwner;
-        o.procent = pProcent;
+        owner.procent = pProcent;
         ownerships[pHomeAddress].push(owner);
     }
 
-    function GetOwnership (string memory Adr) public view returns(uint[] memory, address[] memory)
+    function GetOwnership (string memory adr) public view returns(uint[] memory, address[] memory)
     {
         uint[] memory procent = new uint[](ownerships[adr].length);
         address[] memory ownerAddress = new address[](ownerships[adr].length);
@@ -240,23 +240,23 @@ contract HomeList is Owned
 
     function ProcessingOfRequest(uint pId) public OnlyEmployee returns(string memory)
     {
-        if (requests[requestsInitiator[pId]].requestType == RequestType.NewHome)
+        if (requests[requestInit[pId]].requestType == RequestType.NewHome)
         {
-            if(homes[requests[requestsInit[pId]].home.homeAddress].status == false)
+            if(homes[requests[requestInit[pId]].home.homeAddress].status == false)
             {
-                NewHome(requests[requestsInit[pId]].home.homeAddress,requests[requestsInit[pId]].home.area, requests[requestsInit[pId]].home.cost);
+                NewHome(requests[requestInit[pId]].home.homeAddress,requests[requestInit[pId]].home.area, requests[requestInit[pId]].home.cost);
                 RemoveRequest(pId);
-                delete requestsInit[pId];
+                delete requestInit[pId];
                 return "Success!";
             }
         }
         else
         {
-            if(homes[requests[requestsInit[pId]].home.homeAddress].status == true)
+            if(homes[requests[requestInit[pId]].home.homeAddress].status == true)
             {
-                UpdateHome(requests[requestsInit[pId]].home.homeAddress,requests[requestsInit[pId]].home.area, requests[requestsInit[pId]].home.cost);
-                DeleteRequest(pId);
-                delete requestsInit[pId];
+                UpdateHome(requests[requestInit[pId]].home.homeAddress,requests[requestInit[pId]].home.area, requests[requestInit[pId]].home.cost);
+                RemoveRequest(pId);
+                delete requestInit[pId];
                 return "Success update!";
             }
             else
