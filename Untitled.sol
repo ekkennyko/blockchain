@@ -3,7 +3,6 @@ pragma solidity ^0.7.4;
 
 contract Owned
 {
-
     address payable private owner;
 
     constructor() public
@@ -11,7 +10,7 @@ contract Owned
         owner = msg.sender;
     }
 
-    modifier OnlyOwner
+    modifier onlyOwner
     {
         require(
             msg.sender == owner,
@@ -20,12 +19,12 @@ contract Owned
             _;
     }
     
-    function ChangeOwner(address payable newOwner) public OnlyOwner
+    function changeOwner(address payable newOwner) public onlyOwner
     {
         owner = newOwner;
     }
     
-    function GetOwner() public returns (address)
+    function getOwner() public returns (address)
     {
         return owner;
     }
@@ -34,7 +33,18 @@ contract Owned
 contract HomeList is Owned
 {
     enum RequestType { NewHome, EditHome }
-    
+    enum OwnerOp { NewOwner, ChangeOwner, AddOwner }
+    address[] requestInit;
+    address[] ownerInit;
+    string[] homeInit;
+    uint private reqCount;
+    uint private transactCost;
+
+    constructor() public
+    {
+        transactCost = 100 wei;
+    }
+
     struct Ownership
     {
         string homeAddress;
@@ -47,7 +57,7 @@ contract HomeList is Owned
         string name;
         uint passSer;
         uint passNum;
-        uint date;
+        string passDate;
         string phoneNumber;
     }
     
@@ -56,15 +66,16 @@ contract HomeList is Owned
         string homeAddress;
         uint area;
         uint cost;
-        bool status;
+        bool isSet;
     }
     
     struct Request
     {
         RequestType requestType;
-        Home home;
+        string homeAddress;
+        uint homeArea;
+        uint homeCost;
         address adr;
-        bool result;
     }
     
     struct Employee
@@ -72,197 +83,170 @@ contract HomeList is Owned
         string name;
         string position;
         string phoneNumber;
-        bool isEmployee;
+        bool isSet;
     }
     
     mapping(address => Employee) private employees;
     mapping(address => Owner) private owners;
     mapping(address => Request) private requests;
-    
     mapping(string => Home) private homes;
     mapping(string => Ownership[]) private ownerships;
-
-    address[] requestInit;
-    uint private price = 1e12;
-    uint private amount;
     
-    modifier OnlyEmployee
+    modifier onlyEmployee
     {
         require(
-            employees[msg.sender].isEmployee != false,
+            employees[msg.sender].isSet != false,
             'Only Employee can do it'
             );
             _;
     }
 
-    modifier Costs(uint value)
+    modifier costs(uint value)
     {
         require(
             msg.value >= value,
-            'Not enough to buy'
+            'Not enough to buy...'
         );
         _;
     }
 
-    function ChangePrice(uint pPrice) public OnlyOwner
-    {
-        price = pPrice;
-    }
-    
-    function GetPrice() public view returns (uint)
-    {
-        return price;
-    }
-    
-    function NewHome(string memory pAdr, uint pArea, uint pCost) public
+    function addHome(string memory adr, uint area, uint cost) public onlyEmployee
     {
         Home memory h;
-        h.homeAddress = pAdr;
-        h.area = pArea;
-        h.cost = pCost;
-        h.status = true;
-        homes[pAdr] = h;
-    }
-    
-    function GetHome(string memory adr) public returns (uint pArea, uint pCost)
-    {
-        return (homes[adr].area, homes[adr].cost);
+        h.homeAddress = adr;
+        h.area = area;
+        h.cost = cost;
+        homes[adr] = h;
+        homeInit.push(adr);
     }
 
-    function UpdateHome(string memory pAdr, uint pNewArea, uint pNewCost) public
+    function getHome(string memory adr) public onlyEmployee returns (Home memory)
     {
-        Home storage h = homes[pAdr];
-        h.area = pNewArea;
-        h.cost = pNewCost;
+        return homes[adr];
     }
 
-    function NewOwnership(string memory pHomeAddress, address pOwner, uint pProcent) public
+    function getHomeList() public returns (Home[] memory homesList)
     {
-        Ownership memory owner;
-        owner.homeAddress = pHomeAddress;
-        owner.owner = pOwner;
-        owner.procent = pProcent;
-        ownerships[pHomeAddress].push(owner);
+        homesList = new Home[](homeInit.length);
+        for(uint i = 0; i < homeInit.length; i++)
+            homesList[i] = homes[homeInit[i]];
+        return homesList;
     }
 
-    function GetOwnership (string memory adr) public view returns(uint[] memory, address[] memory)
+    function getOwnerList() public returns (Owner[] memory ownersList)
     {
-        uint[] memory procent = new uint[](ownerships[adr].length);
-        address[] memory ownerAddress = new address[](ownerships[adr].length);
-        for (uint i = 0; i != ownerships[adr].length; i++)
-        {
-            procent[i] = ownerships[adr][i].procent;
-            ownerAddress[i] = ownerships[adr][i].owner;
-        }
-        return(procent, ownerAddress);
+        ownersList = new Owner[](ownerInit.length);
+        for(uint i = 0; i < ownerInit.length; i++)
+            ownersList[i] = owners[ownerInit[i]];
+        return ownersList;
     }
 
-    function RemoveOwnership(string memory pHomeAddress, address pOwner) public
-    {
-        delete ownerships[pHomeAddress];
-    }
-    
-    function NewEmployee(address empl, string memory pName, string memory pPosition, string memory pPhoneNumber) public OnlyOwner
+    function addEmployee(address empl, string memory name, string memory position, string memory phoneNumber) public onlyOwner costs(transactCost) payable
     {
         Employee memory e;
-        e.name = pName;
-        e.position = pPosition;
-        e.phoneNumber = pPhoneNumber;
-        e.isEmployee = true;
+        e.name = name;
+        e.position = position;
+        e.phoneNumber = phoneNumber;
+        e.isSet = true;
         employees[empl] = e;
     }
-    
-    function GetEmployee(address empl) public OnlyOwner returns (string memory pName, string memory pPosition, string memory pPhoneNumber)
+
+    function getEmployee(address empl) public onlyOwner returns (string memory name, string memory position, string memory phoneNumber)
     {
         return (employees[empl].name, employees[empl].position, employees[empl].phoneNumber);
     }
-    
-    function UpdateEmployee(address empl, string memory pNewName, string memory pNewPosition, string memory pNewPhoneNumber) public OnlyOwner
+
+    function editEmployee(address empl, string memory name, string memory position, string memory phoneNumber) public onlyOwner
     {
-        Employee storage e = employees[empl];
-        if(employees[empl].isEmployee == true)
-        {
-           string memory empty = "";
-           if(bytes(pNewName).length != bytes(empty).length) { e.name = pNewName; }
-           if(bytes(pNewPosition).length != bytes(empty).length) { e.position = pNewPosition; }
-           if(bytes(pNewPhoneNumber).length != bytes(empty).length) { e.phoneNumber = pNewPhoneNumber; }
-        }
-        else revert();
+        employees[empl].name = name;
+        employees[empl].position = position;
+        employees[empl].phoneNumber = phoneNumber;
     }
     
-    function RemoveEmployee(address empl) public OnlyOwner returns(bool)
+    function deleteEmployee(address empl) public onlyOwner costs(transactCost) payable returns (bool)
     {
-        if(employees[empl].isEmployee == true)
+        if (employees[empl].isSet)
         {
             delete employees[empl];
             return true;
         }
         return false;
     }
-
-     function NewRequest(uint pType, string memory pHomeAddress, uint pArea, uint pCost, address pNewOwner) public payable Costs(price) returns (bool)
-     {
-        Home memory h;
+    
+    function addNewHomeRequest(string memory homeAddress, uint homeArea, uint32 homeCost) public costs(transactCost) payable returns (bool)
+    {
         Request memory r;
-
-        r.requestType = pType == 0? RequestType.NewHome:RequestType.EditHome;
-        r.adr = pType==0?address(0):pNewOwner;
-
-        h.homeAddress = pHomeAddress;
-        h.area = pArea;
-        h.cost = pCost;
-        r.home = h;
-        r.result = false;
+        r.requestType = RequestType.NewHome;
+        r.homeAddress = homeAddress;
+        r.homeArea = homeArea;
+        r.homeCost = homeCost;
+        r.adr = address(0);
         requests[msg.sender] = r;
         requestInit.push(msg.sender);
-        amount += msg.value;
+        reqCount += msg.value;
         return true;
     }
-
-    function GetRequestList() public OnlyEmployee returns (uint[] memory, uint[] memory, string[] memory)
+    
+    function addEditHomeRequest(string memory homeAddress, uint homeArea,  uint32 homeCost) public costs(transactCost) payable returns (bool)
     {
-        uint[] memory ids = new uint[](requestInit.length);
-        uint[] memory types = new uint[](requestInit.length);
-        string[] memory homeAddresses = new string[](requestInit.length);
-        for(uint i=0; i!=requestInit.length; i++)
-        {
-            ids[i] = i;
-            types[i] = requests[requestInit[i]].requestType == RequestType.NewHome ? 0 : 1;
-            homeAddresses[i] = requests[requestInit[i]].home.homeAddress;
-        }
-        return (ids, types, homeAddresses);
+        Request memory r;
+        r.requestType = RequestType.EditHome;
+        r.homeAddress = homeAddress;
+        r.homeArea = homeArea;
+        r.homeCost = homeCost;
+        r.adr = address(0);
+        requests[msg.sender] = r;
+        requestInit.push(msg.sender);
+        reqCount += msg.value;
+        return true;
     }
-
-    function RemoveRequest(uint pId) public
+    
+    function addOwnerRequest() public costs(transactCost) payable returns (bool) 
     {
-        delete requests[requestInit[pId]];
+        ownerInit.push(msg.sender);
+        return true;
     }
-
-    function ProcessingOfRequest(uint pId) public OnlyEmployee returns(string memory)
+    
+    function getRequestList() public onlyEmployee returns (Request[] memory request)
     {
-        if (requests[requestInit[pId]].requestType == RequestType.NewHome)
+        request = new Request[](reqCount);
+        for (uint _i = 0; _i < reqCount; _i++)
+            request[_i] = requests[requestInit[_i]];
+        return request;
+    }
+    
+    function processRequest(uint id) public onlyEmployee costs(transactCost) payable returns (uint) 
+    {
+        if (id < 0 || id >= requestInit.length)
+            return 1;
+        Request memory r = requests[requestInit[id]];
+        if (r.requestType == RequestType.NewHome && homes[r.homeAddress].isSet)
         {
-            if(homes[requests[requestInit[pId]].home.homeAddress].status == false)
-            {
-                NewHome(requests[requestInit[pId]].home.homeAddress,requests[requestInit[pId]].home.area, requests[requestInit[pId]].home.cost);
-                RemoveRequest(pId);
-                delete requestInit[pId];
-                return "Success!";
-            }
+            delete requests[requestInit[id]];
+            delete requestInit[id];
+            return 2;
         }
-        else
+        if (r.requestType == RequestType.NewHome)
         {
-            if(homes[requests[requestInit[pId]].home.homeAddress].status == true)
-            {
-                UpdateHome(requests[requestInit[pId]].home.homeAddress,requests[requestInit[pId]].home.area, requests[requestInit[pId]].home.cost);
-                RemoveRequest(pId);
-                delete requestInit[pId];
-                return "Success update!";
-            }
-            else
-            {
-                return "Failure!...";
-            }
+            addHome(r.homeAddress, r.homeArea, r.homeCost);
+            Ownership memory ownership;
+            ownership.homeAddress = r.homeAddress;
+            ownership.owner = requestInit[id];
+            ownership.procent = 1;
+            ownerships[r.homeAddress].push(ownership);
+        } 
+        if (r.requestType == RequestType.EditHome)
+        {
+            homes[r.homeAddress].area = r.homeArea;
+            homes[r.homeAddress].cost = r.homeCost;
         }
+        delete requests[requestInit[id]];
+        delete requestInit[id];
+        return 0;
+    }
+    
+    function getPrice() public returns (uint price)
+    {
+        return transactCost;
     }
 }
