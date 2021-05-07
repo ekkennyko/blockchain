@@ -42,7 +42,7 @@ contract HomeList is Owned
 
     constructor() public
     {
-        transactCost = 100 wei;
+        transactCost = 100 gwei;
     }
 
     struct Ownership
@@ -120,7 +120,7 @@ contract HomeList is Owned
         homeInit.push(adr);
     }
 
-    function getHome(string memory adr) public onlyEmployee returns (Home memory)
+    function getHome(string memory adr) public returns (Home memory)
     {
         return homes[adr];
     }
@@ -141,7 +141,7 @@ contract HomeList is Owned
         return ownersList;
     }
 
-    function addEmployee(address empl, string memory name, string memory position, string memory phoneNumber) public onlyOwner costs(transactCost) payable
+    function addEmployee(address empl, string memory name, string memory position, string memory phoneNumber) public onlyOwner
     {
         Employee memory e;
         e.name = name;
@@ -163,7 +163,7 @@ contract HomeList is Owned
         employees[empl].phoneNumber = phoneNumber;
     }
     
-    function deleteEmployee(address empl) public onlyOwner costs(transactCost) payable returns (bool)
+    function deleteEmployee(address empl) public onlyOwner returns (bool)
     {
         if (employees[empl].isSet)
         {

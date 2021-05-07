@@ -10,42 +10,80 @@
   height: 100%;
 }
 
+.info {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-family: monospace;
+  font-size: 5mm;
+}
+
+#hhref {
+  margin-left: 15px;
+}
+
+#title{
+  color: #00ffe5;
+  margin-left: 10px;
+  font-family: monospace;
+  font-size: 5mm;
+  font-weight: bold;
+}
+
 html,
 body {
+  color: #fffbdf;
   width: 100%;
   min-width: 1000px;
   height: 100%;
   min-height: 650px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, monospace;
 }
 
 header {
   display: flex;
   flex-direction: row;
   padding: 10px;
-  color: white;
-  background-color: rgb(89, 107, 187);
+  background-color: #25635c;
   border-bottom: 0;
 }
 
 main {
   padding: 10px;
   flex: 1 0 auto;
+  background-color: #282828;
+}
+
+form {
+  padding-left: 5px;
+  padding-top: 5px;
 }
 
 footer {
   padding: 10px;
   height: 2em;
-  color: white;
-  background-color: rgb(89, 107, 187);
+  background-color: #4b5d67;
   flex: 0 0 auto;
   border-top: 0;
 }
 
-a:link {
-  color: #ffffff;
+a {
+  text-decoration: none;
+  color: #fff;
 }
 
-a:visited {
-  color: #d3f3ff;
+a:hover{
+  color: rgb(177, 208, 218);
+}
+
+#submit {
+  border-radius: 2px;
+  border: 2px;
+  background-color: mediumaquamarine;
+  padding: 10px;
+  margin-top: 5px;
+  min-width: 65px;
+}
+
+#submit:hover {
+  background-color: rgb(98, 192, 161);
 }

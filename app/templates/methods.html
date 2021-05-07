@@ -1,6 +1,6 @@
 {% extends "master.html" %}
 {% block content %}
-<h1>Sign In</h1>
+<h1>{{ mode }}</h1>
 <form autocomplete="off" action="" method="post" novalidate>
     {{ form.hidden_tag() }}
     {% for field in form if field.id != 'csrf_token' %}
