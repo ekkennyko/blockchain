@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8">
+  <title>Request</title>
+ </head>
+ <body style="background-color:#5c211c;">
+  <div style="text-align: center;align-content: center; margin: auto;">
+    <p style="font-size: 40px;">Request</p>
+    <p style="font-size: 15px;">0 - NewHome or 1-EditHome</p>
+
+    <form action="{{ url_for('addrequest')}}" method="POST">
+      <input type="text" name="rType" placeholder="0 or 1">
+      <input type="text" name="homeAddress" placeholder="homeAddress">
+      <input type="number" name="area" placeholder="area">
+      <input type="number" name="cost" placeholder="cost">
+      <input type="text" name="newOwner" placeholder="newOwner">
+      <button style="margin-top: 5px;">Add Request</button><br>
+    </form>
+
+    <form action="{{ url_for('getRequest')}}" method="POST">
+      <button style="margin-top: 5px;">Get Request</button>
+    </form>
+
+    <form action="{{ url_for('processreq')}}" method="POST">
+      <input type="text" name="idk" placeholder="id">
+      <button style="margin-top: 5px;">Process Request</button>
+    </form>
+
+    <form>  
+      {%if res%}
+      <p> {{res}}</p>
+      {%endif%}
+    </form>
+
+  </div>
+
+ </body>
+</html>

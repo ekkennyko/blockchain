@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8">
+  <title>Employee</title>
+ </head>
+ <body style="background-color:#5c211c;">
+  <div style="text-align: center; align-content: center; margin: auto;">
+        <p style="font-size: 40px;">Employee</p>
+        <form action="{{ url_for('addEmployee')}}" method="POST">
+            <input type="text" name="empl" placeholder="address">
+            <input type="text" name="name" placeholder="name">
+            <input type="text" name="position" placeholder="position">
+            <input type="text" name="phonenumber" placeholder="phone number">
+            <button style="margin-top: 5px;">AddEmployee</button>
+        </form>
+        <form style="margin-top: 7px;" action="{{ url_for('editEmployee')}}" method="POST">
+            <input type="text" name="empl" placeholder="address">
+            <input type="text" name="newname" placeholder="new name">
+            <input type="text" name="newposition" placeholder="new position">
+            <input type="text" name="newphonenumber" placeholder="new phonenumber">
+            <button style="margin-top: 5px;">EditEmployee</button>
+        </form>
+        <form action="{{ url_for('getEmployee')}}" method="POST">
+            <input type="text" name="empl" placeholder="address" >
+            <button style="margin-top: 5px;">Get Employee</button>
+        </form>
+        {%if res%}
+        <p> name: {{res[0]}}</p>
+        <p> position: {{res[1]}}</p>
+        <p> PhoneNumber: {{res[2]}}</p>
+        {%endif%}
+   </div>
+ </body>
+</html>

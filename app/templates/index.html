@@ -1,9 +1,0 @@
-{% extends "master.html" %}
-{% block content %}
-<h1 style="margin-bottom: 10px;">Hello, {{user.nickname}}!</h1>
-{% for i in info %}
-<div class="info">
-    <p>{{i.key}}:<br><b style="color: #fff">{{i.body}}</b></p>
-</div>
-{% endfor %}
-{% endblock %}

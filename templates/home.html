@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8">
+  <title>Home</title>
+ </head>
+ <body style="background-color:#5c211c;">
+  <div style="text-align: center; align-content: center; margin: auto;">
+    <p style="font-size: 40px;">Home</p>
+
+    <form action="{{ url_for('addHome')}}" method="POST">
+      <input type="text" name="homeAddress" placeholder="homeaddress">
+      <input type="number" name="area" placeholder="area">
+      <input type="number" name="cost" placeholder="cost">
+      <button style="margin-top: 5px;">Add Home</button> 
+    </form>
+
+    <form action="{{ url_for('getHome')}}" method="POST">
+      <input type="text" name="homeAddress" placeholder="address">
+      <button style="margin-top: 5px;">Get Home</button> 
+    </form>
+
+    <form action="{{ url_for('getlisthome')}}" method="POST">
+      <button style="margin-top: 5px;">Get List Home</button> 
+    </form>
+
+    {%if result%}
+    <p>{{result}}</p>
+    {%endif%}
+
+    {%if res%}
+    <p> homeAddress: {{homeAddress}}</p>
+    <p> area: {{res[0]}}</p>
+    <p> cost: {{res[1]}}</p>
+    {%endif%}
+
+  </div>
+ </body>
+</html>
