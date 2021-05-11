@@ -7,8 +7,8 @@
   <body style="background-color: #5c211c;">
     <div style="text-align: center; align-content: center; margin: auto;">
       <p style="font: 100px sans-serif;"><b>BlockChain</b></p>
-      <h1 style="font: 22px sans-serif;">{%if res%} Владелец: {{res}} {%endif%}</h1>
-      <h1 style="font: 22px sans-serif;">{%if res%} Адрес текущего контракта: {{kt_tr}} {%endif%}</h1>
+      <h1 style="font: 22px sans-serif;">{%if res%}Владелец: {{res}} {%endif%}</h1>
+      <h1 style="font: 22px sans-serif;">{%if res%}Адрес текущего контракта: {{kt_tr}} {%endif%}</h1>
       <form action="{{ url_for('emp')}}"><button class="btn btn-primary">Employee</button></form><br>
       <form action="{{ url_for('home')}}"><button class="btn btn-primary">Home</button></form><br>
       <form action="{{ url_for('request')}}"><button class="btn btn-primary">Request</button></form><br>

@@ -4,10 +4,10 @@ import json
 
 app = Flask(__name__)
 
-infura_url = 'https://ropsten.infura.io/v3/80d19f6b7b8646ffa17bed25035e1fe8'
-address = '0x320bF3caC3C64dB4239F8A16cBE654559bB40162'
-contract_address = '0x73081DD9190FE8B44BD81147FB1BeE91962E01b0'
-private_key = '4df69fb822f9dcf3fab0b1208fa5aac458bd161a3c46618d3992226550fcabe0'
+infura_url = 'https://ropsten.infura.io/v3/a9d9a6319c034ed4a25b63cfe3ad36e3'
+address = '0x694Cf957B6f0667dA92DACB8A88cd9D8322c20E4'
+contract_address = '0x8Bd20cCCC11647789215AfF32866cEf5942093cF'
+private_key = 'f63a58d1eae986a845a9e160ae3028a68016d215c9202ac04ae47e502ae523ce'
 
 w3 = Web3(Web3.HTTPProvider(infura_url))
 w3.eth.defaultAccount = address
@@ -51,7 +51,7 @@ def addEmployee():
     if (empl != "" and name != ""):
         empl_tr = contract.functions.AddEmployee(empl, name, position, phonenumber).buildTransaction({
             'gas': 3000000,
-            'gasPrice': w3.toWei('1', 'gwei'),
+            'gasPrice': w3.toWei('0.1', 'gwei'),
             'from': address,
             'nonce': nonce,
         })
@@ -129,7 +129,6 @@ def addrequest():
     area = request.form.get("area")
     cost = request.form.get("cost")
     newOwner = request.form.get("newOwner")
-    #if (rType == 1 or rType == 0):
     addreq_tr = contract.functions.AddRequest(int(rType), str(homeAddress), int(area), int(cost), newOwner).buildTransaction({
         'gas': 3000000,
         'gasPrice': w3.toWei('1', 'gwei'),
