@@ -1,13 +1,13 @@
 from web3 import Web3
-from flask import Flask, render_template, request
+from flask import request, Flask, render_template
 import json
 
 app = Flask(__name__)
 
 infura_url = 'https://ropsten.infura.io/v3/a9d9a6319c034ed4a25b63cfe3ad36e3'
 address = '0x694Cf957B6f0667dA92DACB8A88cd9D8322c20E4'
-contract_address = '0x8Bd20cCCC11647789215AfF32866cEf5942093cF'
-private_key = 'f63a58d1eae986a845a9e160ae3028a68016d215c9202ac04ae47e502ae523ce'
+contract_address = '0x6e641B67f48A91DBA99836887772F629887C0774'
+private_key = 'f8e453b843a653b06840284c90aa8acc39405cc75efbdbed1b1b80e24e92a3f4'
 
 w3 = Web3(Web3.HTTPProvider(infura_url))
 w3.eth.defaultAccount = address
@@ -33,7 +33,7 @@ def home():
     return render_template("home.html")
 
 @app.route('/Request')
-def request():
+def requestInit():
     return render_template("request.html")
 
 @app.route('/Cost')
@@ -44,7 +44,7 @@ def cost():
 @app.route('/AddEmployee', methods=['POST'])
 def addEmployee():
     nonce = w3.eth.getTransactionCount(address)
-    empl = request.form.get("empl")
+    empl = request.form.get("employee")
     name = request.form.get("name")
     position = request.form.get("position")
     phonenumber = request.form.get("phonenumber")
