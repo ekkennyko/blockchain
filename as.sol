@@ -98,7 +98,7 @@ contract ROSReestr is Owned
     {
         require(
             employees[msg.sender].isset != false,
-            'lya ti krisa'
+            'Only employees can do it'
             );
         _;
     }
@@ -107,7 +107,7 @@ contract ROSReestr is Owned
     {
         require(
             msg.value >= value,
-            'Not enough funds!!'
+            'Not enough to buy....'
             );
         _;
     }
