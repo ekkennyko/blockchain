@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 infura_url = 'https://ropsten.infura.io/v3/a9d9a6319c034ed4a25b63cfe3ad36e3'
 address = '0x694Cf957B6f0667dA92DACB8A88cd9D8322c20E4'
-contract_address = '0x6e641B67f48A91DBA99836887772F629887C0774'
+contract_address = '0x97B6752a1C619309BDEcE0a0B4231BD93456de5f'
 private_key = 'f8e453b843a653b06840284c90aa8acc39405cc75efbdbed1b1b80e24e92a3f4'
 
 w3 = Web3(Web3.HTTPProvider(infura_url))
